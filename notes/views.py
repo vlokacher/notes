@@ -1,3 +1,34 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Note
+from .forms import NoteForm
 
-# Create your views here.
+
+# 🧑‍💻 Функции Разработчика 1 (Список и удаление)
+def note_list(request):
+    notes = Note.objects.all().order_by("-created_at")
+    return render(request, "notes/list.html", {"notes": notes})
+
+
+def note_delete(request, pk):
+    note = get_object_or_404(Note, pk=pk)
+    if request.method == "POST":
+        note.delete()
+        return redirect("note_list")
+    return render(request, "notes/delete.html", {"note": note})
+
+
+# 🧑‍💻 Функции Разработчика 2 (Создание и просмотр)
+def note_create(request):
+    if request.method == "POST":
+        form = NoteForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect("note_list")
+    else:
+        form = NoteForm()
+    return render(request, "notes/create.html", {"form": form})
+
+
+def note_detail(request, pk):
+    note = get_object_or_404(Note, pk=pk)
+    return render(request, "notes/detail.html", {"note": note})
